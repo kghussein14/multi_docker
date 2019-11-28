@@ -1,0 +1,22 @@
+sudo: required
+services:
+  -docker
+
+before_install:
+  - docker build -t kghussein14/multi_docker -f Dockerfile.dev -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true kghussein14/multi_docker npm run test -- --coverage
+
+after_success:
+  - docker build -t kghussein14/multi-client ./client
+  - docker build -t kghussein14/multi-nginx ./nginx
+  - docker build -t kghussein14/multi-server ./server
+  - docker build -t kghussein14/multi-worker ./worker
+  #To log in to docker Hub
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push kghussein14/multi-client
+  - docker push kghussein14/multi-nginx
+  - docker push kghussein14/multi-server
+  - docker push kghussein14/multi-worker
+
